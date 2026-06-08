@@ -3,7 +3,8 @@ var appStarted  = false; // bindEvents() chỉ gọi 1 lần dù login/logout nh
 
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(() =>
+  // Dùng redirect thay popup để tránh lỗi COOP trên Netlify
+  auth.signInWithRedirect(provider).catch(() =>
     alert('Đăng nhập thất bại. Vui lòng thử lại!'));
 }
 
@@ -21,6 +22,12 @@ function updateUserAvatar() {
   }
 }
 
+function showError(msg) {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  alert(msg);
+}
+
 // Lắng nghe thay đổi trạng thái đăng nhập
 auth.onAuthStateChanged(async user => {
   if (user) {
@@ -30,7 +37,13 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('loading-screen').classList.remove('hidden');
     document.getElementById('app-container').classList.add('hidden');
 
-    await loadFromFirestore();
+    try {
+      await loadFromFirestore();
+    } catch (err) {
+      console.error('Lỗi tải dữ liệu:', err);
+      showError('Không thể tải dữ liệu. Kiểm tra kết nối hoặc Firestore rules và thử lại.');
+      return;
+    }
 
     document.getElementById('loading-screen').classList.add('hidden');
     document.getElementById('app-container').classList.remove('hidden');
