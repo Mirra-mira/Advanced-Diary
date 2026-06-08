@@ -55,28 +55,33 @@ function saveNotebook() {
   }
   const desc = document.getElementById('nb-desc-input').value.trim();
   const now  = new Date().toISOString();
+  let nb;
 
   if (editingNotebookId) {
-    const nb = notebooks.find(x => x.id === editingNotebookId);
+    nb = notebooks.find(x => x.id === editingNotebookId);
     Object.assign(nb, { title, description: desc, updatedAt: now });
     document.getElementById('nb-title-display').textContent = title;
   } else {
-    notebooks.unshift({
-      id: uid(), title, description: desc,
-      colorIndex: Math.floor(Math.random() * COVER_COLORS.length),
-      createdAt: now, updatedAt: now
-    });
+    nb = { id: uid(), title, description: desc, colorIndex: Math.floor(Math.random() * COVER_COLORS.length), createdAt: now, updatedAt: now };
+    notebooks.unshift(nb);
   }
 
-  saveAll();
+  saveNotebookDoc(nb).catch(console.error); // fire-and-forget
   closeNotebookModal();
   renderMain();
 }
 
 // ---- Entry ----
-function openEntryModal(entry) {
+// async vì cần load ảnh từ Firestore trước khi mở modal
+async function openEntryModal(entry) {
   editingEntryId = entry ? entry.id : null;
-  pendingImgs    = entry ? [...(entry.images || [])] : [];
+  pendingImgs    = [];
+
+  if (entry && entry.imageIds && entry.imageIds.length) {
+    await loadEntryImages(entry);
+    // pendingImgs giờ là [{id, data}] để theo dõi ảnh cũ vs mới
+    pendingImgs = entry.imageIds.map(id => ({ id, data: imageCache[id] || '' }));
+  }
 
   document.getElementById('entry-modal-heading').textContent = entry ? 'Sửa trang nhật ký' : 'Thêm trang nhật ký';
   document.getElementById('entry-date-input').value          = entry ? entry.noteDate : todayIso();
@@ -95,9 +100,10 @@ function closeEntryModal() {
 
 function renderEntryPreviews() {
   const el = document.getElementById('entry-img-previews');
-  el.innerHTML = pendingImgs.map((src, i) => `
+  // pendingImgs là [{id, data}] – dùng .data để hiển thị ảnh
+  el.innerHTML = pendingImgs.map((img, i) => `
     <div class="preview-wrap">
-      <img src="${src}" alt="">
+      <img src="${img.data}" alt="">
       <button class="preview-remove" data-i="${i}">×</button>
     </div>
   `).join('');
@@ -119,20 +125,30 @@ async function saveEntry() {
   const content  = document.getElementById('entry-content-input').value.trim();
   const now      = new Date().toISOString();
 
+  const oldEntry    = editingEntryId ? entries.find(x => x.id === editingEntryId) : null;
+  const oldImageIds = oldEntry ? (oldEntry.imageIds || []) : [];
+  const entryId     = editingEntryId || uid();
+
+  // Đồng bộ ảnh: upload mới, xóa bị loại, trả về imageIds[]
+  const imageIds = await syncImages(entryId, pendingImgs, oldImageIds);
+
   if (editingEntryId) {
     const entry = entries.find(x => x.id === editingEntryId);
-    Object.assign(entry, { noteDate, content, images: pendingImgs, updatedAt: now });
+    Object.assign(entry, { noteDate, content, imageIds, updatedAt: now });
   } else {
-    const newEntry = { id: uid(), notebookId: activeNotebookId, noteDate, content, images: pendingImgs, createdAt: now, updatedAt: now };
+    const newEntry = { id: entryId, notebookId: activeNotebookId, noteDate, content, imageIds, createdAt: now, updatedAt: now };
     entries.push(newEntry);
     activeEntryId = newEntry.id;
   }
 
+  const entryToSave = entries.find(x => x.id === entryId);
+  await saveEntryDoc(entryToSave);
+
+  // Cập nhật updatedAt của notebook
   const nb = notebooks.find(x => x.id === activeNotebookId);
-  if (nb) nb.updatedAt = now;
+  if (nb) { nb.updatedAt = now; saveNotebookDoc(nb).catch(console.error); }
 
   imgIndex = 0;
-  saveAll();
   closeEntryModal();
   renderEntryList();
   renderEntryContent();

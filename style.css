@@ -684,3 +684,94 @@ input[type="date"] { color-scheme: dark; }
 
 /* ---- UTILITY ---- */
 .hidden { display: none !important; }
+
+/* ---- LOGIN SCREEN ---- */
+#login-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  z-index: 1000;
+}
+
+.login-box {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px;
+  padding: 48px 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-align: center;
+  max-width: 320px; width: 90%;
+}
+
+.login-logo  { font-size: 48px; line-height: 1; }
+.login-title { font-size: 22px; font-weight: 700; }
+.login-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+
+.btn-login-google {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  width: 100%; justify-content: center;
+}
+.btn-login-google:hover { background: var(--surface); border-color: var(--accent); }
+
+/* ---- LOADING SCREEN ---- */
+#loading-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  z-index: 999;
+}
+
+.loading-box {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  color: var(--text-muted); font-size: 14px;
+}
+
+.loading-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- USER AVATAR (topbar) ---- */
+.user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; overflow: hidden; padding: 0;
+  flex-shrink: 0;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-avatar:hover { border-color: var(--accent); }
+
+/* ---- APP CONTAINER ---- */
+#app-container { height: 100%; }
+#app-container.hidden { display: none; }
+
+/* ---- SETTINGS: nút đăng xuất ---- */
+.btn-danger-soft {
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  color: var(--red);
+  font-size: 13px; cursor: pointer;
+  transition: background .15s;
+}
+.btn-danger-soft:hover { background: rgba(224,82,82,.12); }

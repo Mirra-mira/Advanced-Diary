@@ -94,9 +94,10 @@ function renderMain() {
         if (!nb) return;
         const count = entries.filter(e => e.notebookId === nb.id).length;
         if (!confirm(`Xóa sổ "${nb.title}" và toàn bộ ${count} trang nhật ký?`)) return;
-        notebooks = notebooks.filter(x => x.id !== btn.dataset.id);
-        entries   = entries.filter(x => x.notebookId !== btn.dataset.id);
-        saveAll();
+        const nbId = btn.dataset.id;
+        deleteNotebookDoc(nbId).catch(console.error); // xóa Firestore
+        notebooks = notebooks.filter(x => x.id !== nbId);
+        entries   = entries.filter(x => x.notebookId !== nbId);
         renderMain();
       });
     });

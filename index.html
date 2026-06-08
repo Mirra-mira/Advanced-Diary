@@ -8,192 +8,229 @@
 </head>
 <body>
 
-  <!-- ===== MAIN VIEW ===== -->
-  <div id="view-main" class="view active">
-
-    <header class="topbar">
-      <button id="btn-settings">Cài đặt</button>
-      <span class="topbar-title">Tất cả nhật ký</span>
-      <div class="topbar-right">
-        <button id="btn-search-toggle">Tìm kiếm</button>
-        <button id="btn-filter-toggle">Lọc</button>
-        <button id="btn-edit-mode">Sửa</button>
-      </div>
-    </header>
-
-    <div id="search-panel" class="sub-panel hidden">
-      <input id="search-input" type="text" placeholder="Tìm tên sổ nhật ký...">
-      <div class="filter-row">
-        <button class="filter-btn active" data-days="0">Tất cả</button>
-        <button class="filter-btn" data-days="7">7 ngày</button>
-        <button class="filter-btn" data-days="30">30 ngày</button>
-        <button class="filter-btn" data-days="90">3 tháng</button>
-      </div>
+  <!-- ===== LOGIN SCREEN ===== -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">📔</div>
+      <h1 class="login-title">Advanced Diary</h1>
+      <p class="login-sub">Nhật ký cá nhân, đồng bộ mọi thiết bị</p>
+      <button class="btn-login-google" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Đăng nhập với Google
+      </button>
     </div>
-
-    <div id="sort-panel" class="sub-panel hidden">
-      <button class="sort-btn active" data-sort="updatedAt-desc">Sửa gần đây</button>
-      <button class="sort-btn" data-sort="createdAt-desc">Mới tạo</button>
-      <button class="sort-btn" data-sort="name-asc">A → Z</button>
-      <button class="sort-btn" data-sort="name-desc">Z → A</button>
-    </div>
-
-    <div id="notebooks-grid" class="content-grid"></div>
-
-    <div id="custom-scrollbar">
-      <div id="scrollbar-thumb"></div>
-    </div>
-
-    <button id="btn-new-notebook" class="fab">+</button>
   </div>
 
-  <!-- ===== NOTEBOOK VIEW ===== -->
-  <div id="view-notebook" class="view">
-
-    <div id="entry-panel">
-      <div class="panel-header">
-        <span class="panel-header-label">Trang nhật ký</span>
-        <button id="btn-add-entry-panel" class="icon-btn" title="Thêm trang">+</button>
-      </div>
-      <div id="entry-list"></div>
+  <!-- ===== LOADING SCREEN ===== -->
+  <div id="loading-screen" class="hidden">
+    <div class="loading-box">
+      <div class="loading-spinner"></div>
+      <p>Đang tải dữ liệu...</p>
     </div>
-    <div id="entry-overlay" class="hidden"></div>
+  </div>
 
-    <header class="topbar">
-      <button id="btn-back">← Quay lại</button>
-      <button id="btn-panel-toggle" class="icon-btn" title="Danh sách trang">›</button>
-      <span id="nb-title-display" class="topbar-title"></span>
-      <div class="topbar-right">
-        <button id="btn-edit-notebook" title="Sửa sổ">✏</button>
-        <button id="btn-delete-notebook" class="btn-danger" title="Xóa sổ">🗑</button>
-      </div>
-    </header>
+  <!-- ===== APP CONTAINER ===== -->
+  <div id="app-container" class="hidden">
 
-    <div id="entry-content-area" class="entry-content-area">
+    <!-- ===== MAIN VIEW ===== -->
+    <div id="view-main" class="view active">
 
-      <div id="entry-empty" class="entry-empty">
-        <p>Nhấn <strong>+</strong> để thêm trang nhật ký đầu tiên</p>
-      </div>
-
-      <div id="entry-view" class="hidden">
-        <div class="entry-header">
-          <span id="entry-date-display" class="entry-date-text"></span>
-          <button id="btn-delete-entry" class="btn-icon-muted" title="Xóa trang">🗑</button>
+      <header class="topbar">
+        <button id="btn-settings">Cài đặt</button>
+        <span class="topbar-title">Tất cả nhật ký</span>
+        <div class="topbar-right">
+          <button id="btn-search-toggle">Tìm kiếm</button>
+          <button id="btn-filter-toggle">Lọc</button>
+          <button id="btn-edit-mode">Sửa</button>
+          <button id="user-avatar" class="user-avatar" title="Đăng xuất"></button>
         </div>
-        <div class="desc-card">
-          <p id="entry-desc-display" class="desc-text"></p>
+      </header>
+
+      <div id="search-panel" class="sub-panel hidden">
+        <input id="search-input" type="text" placeholder="Tìm tên sổ nhật ký...">
+        <div class="filter-row">
+          <button class="filter-btn active" data-days="0">Tất cả</button>
+          <button class="filter-btn" data-days="7">7 ngày</button>
+          <button class="filter-btn" data-days="30">30 ngày</button>
+          <button class="filter-btn" data-days="90">3 tháng</button>
         </div>
-        <div class="img-card">
-          <div class="carousel-wrap">
-            <button id="img-prev" class="carousel-arrow">&#8249;</button>
-            <div id="img-display"></div>
-            <button id="img-next" class="carousel-arrow">&#8250;</button>
+      </div>
+
+      <div id="sort-panel" class="sub-panel hidden">
+        <button class="sort-btn active" data-sort="updatedAt-desc">Sửa gần đây</button>
+        <button class="sort-btn" data-sort="createdAt-desc">Mới tạo</button>
+        <button class="sort-btn" data-sort="name-asc">A → Z</button>
+        <button class="sort-btn" data-sort="name-desc">Z → A</button>
+      </div>
+
+      <div id="notebooks-grid" class="content-grid"></div>
+
+      <div id="custom-scrollbar">
+        <div id="scrollbar-thumb"></div>
+      </div>
+
+      <button id="btn-new-notebook" class="fab">+</button>
+    </div>
+
+    <!-- ===== NOTEBOOK VIEW ===== -->
+    <div id="view-notebook" class="view">
+
+      <div id="entry-panel">
+        <div class="panel-header">
+          <span class="panel-header-label">Trang nhật ký</span>
+          <button id="btn-add-entry-panel" class="icon-btn" title="Thêm trang">+</button>
+        </div>
+        <div id="entry-list"></div>
+      </div>
+      <div id="entry-overlay" class="hidden"></div>
+
+      <header class="topbar">
+        <button id="btn-back">← Quay lại</button>
+        <button id="btn-panel-toggle" class="icon-btn" title="Danh sách trang">›</button>
+        <span id="nb-title-display" class="topbar-title"></span>
+        <div class="topbar-right">
+          <button id="btn-edit-notebook" title="Sửa sổ">✏</button>
+          <button id="btn-delete-notebook" class="btn-danger" title="Xóa sổ">🗑</button>
+        </div>
+      </header>
+
+      <div id="entry-content-area" class="entry-content-area">
+
+        <div id="entry-empty" class="entry-empty">
+          <p>Nhấn <strong>+</strong> để thêm trang nhật ký đầu tiên</p>
+        </div>
+
+        <div id="entry-view" class="hidden">
+          <div class="entry-header">
+            <span id="entry-date-display" class="entry-date-text"></span>
+            <button id="btn-delete-entry" class="btn-icon-muted" title="Xóa trang">🗑</button>
           </div>
-          <div id="img-dots"></div>
+          <div class="desc-card">
+            <p id="entry-desc-display" class="desc-text"></p>
+          </div>
+          <div class="img-card">
+            <div class="carousel-wrap">
+              <button id="img-prev" class="carousel-arrow">&#8249;</button>
+              <div id="img-display"></div>
+              <button id="img-next" class="carousel-arrow">&#8250;</button>
+            </div>
+            <div id="img-dots"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="entry-fabs">
+        <button id="btn-edit-entry" class="fab-sm fab-edit hidden" title="Sửa trang">✏</button>
+        <button id="btn-add-entry-top" class="fab-sm fab-new" title="Thêm trang">+</button>
+      </div>
+
+      <div id="entry-nav-bar" class="entry-nav-bar hidden">
+        <button id="btn-entry-older" class="entry-nav-btn">← Trang trước</button>
+        <button id="btn-entry-newer" class="entry-nav-btn">Trang sau →</button>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS MODAL ===== -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Cài đặt</h2>
+          <button id="settings-close" class="icon-btn">✕</button>
+        </div>
+        <div class="settings-row">
+          <span>Giao diện</span>
+          <button id="btn-toggle-theme">Chuyển sang sáng</button>
+        </div>
+        <div class="settings-row">
+          <span>Phím tắt</span>
+          <button id="btn-open-shortcuts">Cài đặt</button>
+        </div>
+        <div class="settings-row">
+          <span>Tài khoản</span>
+          <button id="btn-sign-out" class="btn-danger-soft">Đăng xuất</button>
         </div>
       </div>
-
     </div>
 
-    <!-- FABs góc phải dưới -->
-    <div class="entry-fabs">
-      <button id="btn-edit-entry" class="fab-sm fab-edit hidden" title="Sửa trang">✏</button>
-      <button id="btn-add-entry-top" class="fab-sm fab-new" title="Thêm trang">+</button>
-    </div>
-
-    <!-- Thanh điều hướng trang -->
-    <div id="entry-nav-bar" class="entry-nav-bar hidden">
-      <button id="btn-entry-older" class="entry-nav-btn">← Trang trước</button>
-      <button id="btn-entry-newer" class="entry-nav-btn">Trang sau →</button>
-    </div>
-  </div>
-
-  <!-- ===== SETTINGS MODAL ===== -->
-  <div id="settings-modal" class="modal hidden">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2>Cài đặt</h2>
-        <button id="settings-close" class="icon-btn">✕</button>
-      </div>
-      <div class="settings-row">
-        <span>Giao diện</span>
-        <button id="btn-toggle-theme">Chuyển sang sáng</button>
-      </div>
-      <div class="settings-row">
-        <span>Phím tắt</span>
-        <button id="btn-open-shortcuts">Cài đặt</button>
+    <!-- ===== SHORTCUTS MODAL ===== -->
+    <div id="shortcuts-modal" class="modal hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Phím tắt</h2>
+          <button id="shortcuts-close" class="icon-btn">✕</button>
+        </div>
+        <div class="shortcut-row">
+          <span>← Trang trước</span>
+          <button class="key-btn" data-action="entryOlder">A</button>
+        </div>
+        <div class="shortcut-row">
+          <span>Trang sau →</span>
+          <button class="key-btn" data-action="entryNewer">D</button>
+        </div>
+        <div class="shortcut-row">
+          <span>← Hình trước</span>
+          <button class="key-btn" data-action="imgPrev">Q</button>
+        </div>
+        <div class="shortcut-row">
+          <span>Hình sau →</span>
+          <button class="key-btn" data-action="imgNext">E</button>
+        </div>
+        <p class="shortcut-hint">Nhấn vào ô phím để thay đổi, nhấn Esc để hủy</p>
       </div>
     </div>
-  </div>
 
-  <!-- ===== SHORTCUTS MODAL ===== -->
-  <div id="shortcuts-modal" class="modal hidden">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2>Phím tắt</h2>
-        <button id="shortcuts-close" class="icon-btn">✕</button>
-      </div>
-      <div class="shortcut-row">
-        <span>← Trang trước</span>
-        <button class="key-btn" data-action="entryOlder">A</button>
-      </div>
-      <div class="shortcut-row">
-        <span>Trang sau →</span>
-        <button class="key-btn" data-action="entryNewer">D</button>
-      </div>
-      <div class="shortcut-row">
-        <span>← Hình trước</span>
-        <button class="key-btn" data-action="imgPrev">Q</button>
-      </div>
-      <div class="shortcut-row">
-        <span>Hình sau →</span>
-        <button class="key-btn" data-action="imgNext">E</button>
-      </div>
-      <p class="shortcut-hint">Nhấn vào ô phím để thay đổi, nhấn Esc để hủy</p>
-    </div>
-  </div>
-
-  <!-- ===== NOTEBOOK MODAL ===== -->
-  <div id="notebook-modal" class="modal hidden">
-    <div class="modal-box">
-      <h2 id="nb-modal-heading">Sổ nhật ký mới</h2>
-      <input id="nb-title-input" type="text" placeholder="Tên sổ nhật ký *" maxlength="100">
-      <textarea id="nb-desc-input" placeholder="Mô tả ngắn (tùy chọn)..."></textarea>
-      <div class="modal-footer">
-        <button id="nb-modal-cancel">Hủy</button>
-        <button id="nb-modal-save" class="btn-primary">Lưu</button>
+    <!-- ===== NOTEBOOK MODAL ===== -->
+    <div id="notebook-modal" class="modal hidden">
+      <div class="modal-box">
+        <h2 id="nb-modal-heading">Sổ nhật ký mới</h2>
+        <input id="nb-title-input" type="text" placeholder="Tên sổ nhật ký *" maxlength="100">
+        <textarea id="nb-desc-input" placeholder="Mô tả ngắn (tùy chọn)..."></textarea>
+        <div class="modal-footer">
+          <button id="nb-modal-cancel">Hủy</button>
+          <button id="nb-modal-save" class="btn-primary">Lưu</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ===== ENTRY MODAL ===== -->
-  <div id="entry-modal" class="modal hidden">
-    <div class="modal-box">
-      <h2 id="entry-modal-heading">Thêm trang nhật ký</h2>
-      <div class="field-row">
-        <label class="field-label" for="entry-date-input">Ngày nhật ký</label>
-        <input id="entry-date-input" type="date">
-      </div>
-      <textarea id="entry-content-input" placeholder="Nội dung nhật ký..."></textarea>
-      <label class="upload-label">
-        <span id="entry-upload-text">+ Thêm ảnh hoặc paste (tối đa 7)</span>
-        <input id="entry-img-input" type="file" accept="image/*" multiple>
-      </label>
-      <div id="entry-img-previews" class="img-previews"></div>
-      <div class="modal-footer">
-        <button id="entry-modal-cancel">Hủy</button>
-        <button id="entry-modal-save" class="btn-primary">Lưu</button>
+    <!-- ===== ENTRY MODAL ===== -->
+    <div id="entry-modal" class="modal hidden">
+      <div class="modal-box">
+        <h2 id="entry-modal-heading">Thêm trang nhật ký</h2>
+        <div class="field-row">
+          <label class="field-label" for="entry-date-input">Ngày nhật ký</label>
+          <input id="entry-date-input" type="date">
+        </div>
+        <textarea id="entry-content-input" placeholder="Nội dung nhật ký..."></textarea>
+        <label class="upload-label">
+          <span id="entry-upload-text">+ Thêm ảnh hoặc paste (tối đa 7)</span>
+          <input id="entry-img-input" type="file" accept="image/*" multiple>
+        </label>
+        <div id="entry-img-previews" class="img-previews"></div>
+        <div class="modal-footer">
+          <button id="entry-modal-cancel">Hủy</button>
+          <button id="entry-modal-save" class="btn-primary">Lưu</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="js/state.js"></script>
+  </div><!-- /app-container -->
+
+  <!-- Firebase SDK (compat mode – không cần bundler) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- App scripts – thứ tự quan trọng -->
+  <script src="js/firebase.js"></script>  <!-- khởi tạo firebase app, db, auth -->
+  <script src="js/state.js"></script>     <!-- state + Firestore helpers -->
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js"></script>      <!-- renderMain, getFilteredNotebooks -->
   <script src="js/notebook.js"></script>
   <script src="js/modals.js"></script>
   <script src="js/events.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>      <!-- phải đặt cuối vì gọi các hàm ở trên -->
 </body>
 </html>

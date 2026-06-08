@@ -73,9 +73,9 @@ function navigateEntry(direction) {
   renderEntryList();
 }
 
-function renderEntryContent() {
-  const entry = entries.find(e => e.id === activeEntryId);
-
+// async vì cần fetch ảnh từ Firestore nếu chưa có trong cache
+async function renderEntryContent() {
+  const entry  = entries.find(e => e.id === activeEntryId);
   const editFab = document.getElementById('btn-edit-entry');
 
   if (!entry) {
@@ -100,7 +100,11 @@ function renderEntryContent() {
     descEl.classList.add('muted');
   }
 
-  renderCarousel(entry.images || []);
+  // Load ảnh vào cache trước khi render carousel
+  if (entry.imageIds && entry.imageIds.length) {
+    await loadEntryImages(entry);
+  }
+  renderCarousel(getEntryImages(entry));
   updateEntryNav();
 }
 
@@ -163,7 +167,7 @@ function initCarouselSwipe() {
     const dx = e.changedTouches[0].clientX - startX;
     if (Math.abs(dx) < 40) return;
     const entry = entries.find(x => x.id === activeEntryId);
-    const imgs  = entry?.images || [];
+    const imgs  = getEntryImages(entry); // dùng imageCache thay vì entry.images
     if (imgs.length <= 1) return;
     imgIndex = dx < 0
       ? (imgIndex + 1) % imgs.length
@@ -172,7 +176,7 @@ function initCarouselSwipe() {
   }, { passive: true });
 }
 
-// Touch-only drag (mouse drag removed to prevent text selection)
+// Touch-only drag để mở/đóng panel
 function initTouchDrag() {
   const view = document.getElementById('view-notebook');
   let startX = 0, dragging = false;

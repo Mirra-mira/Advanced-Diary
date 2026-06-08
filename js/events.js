@@ -40,6 +40,7 @@ function bindEvents() {
       renderMain();
     }));
 
+  document.getElementById('user-avatar').addEventListener('click', openSettingsModal);
   document.getElementById('btn-new-notebook').addEventListener('click', () => openNotebookModal(null));
 
   // Notebook view
@@ -58,40 +59,46 @@ function bindEvents() {
     if (!nb) return;
     const count = entries.filter(e => e.notebookId === nb.id).length;
     if (!confirm(`Xóa sổ "${nb.title}" và toàn bộ ${count} trang nhật ký trong đó?`)) return;
-    notebooks = notebooks.filter(x => x.id !== activeNotebookId);
-    entries   = entries.filter(x => x.notebookId !== activeNotebookId);
-    saveAll(); renderMain(); goTo('view-main');
+    const nbId = activeNotebookId;
+    deleteNotebookDoc(nbId).catch(console.error); // xóa Firestore (fire-and-forget)
+    notebooks = notebooks.filter(x => x.id !== nbId);
+    entries   = entries.filter(x => x.notebookId !== nbId);
+    renderMain(); goTo('view-main');
   });
 
   // Entry
   document.getElementById('btn-entry-older').addEventListener('click', () => navigateEntry(+1));
   document.getElementById('btn-entry-newer').addEventListener('click', () => navigateEntry(-1));
 
-  document.getElementById('btn-edit-entry').addEventListener('click', () => {
+  document.getElementById('btn-edit-entry').addEventListener('click', async () => {
     const entry = entries.find(e => e.id === activeEntryId);
-    if (entry) openEntryModal(entry);
+    if (entry) await openEntryModal(entry);
   });
 
   document.getElementById('btn-delete-entry').addEventListener('click', () => {
     const entry = entries.find(e => e.id === activeEntryId);
     if (!entry) return;
     if (!confirm(`Xóa trang nhật ký ngày ${fmtDate(entry.noteDate)}?`)) return;
+    deleteEntryDoc(entry.id, entry.imageIds || []).catch(console.error); // xóa Firestore
     entries = entries.filter(e => e.id !== activeEntryId);
     const remaining = entries.filter(e => e.notebookId === activeNotebookId).sort((a,b) => b.noteDate.localeCompare(a.noteDate));
     activeEntryId = remaining.length ? remaining[0].id : null;
     imgIndex = 0;
-    saveAll(); renderEntryList(); renderEntryContent();
+    renderEntryList(); renderEntryContent();
   });
 
+  // Carousel – dùng getEntryImages(entry) thay vì entry.images
   document.getElementById('img-prev').addEventListener('click', () => {
-    const imgs = entries.find(e => e.id === activeEntryId)?.images || [];
+    const entry = entries.find(e => e.id === activeEntryId);
+    const imgs  = getEntryImages(entry);
     if (!imgs.length) return;
     imgIndex = (imgIndex - 1 + imgs.length) % imgs.length;
     renderCarousel(imgs);
   });
 
   document.getElementById('img-next').addEventListener('click', () => {
-    const imgs = entries.find(e => e.id === activeEntryId)?.images || [];
+    const entry = entries.find(e => e.id === activeEntryId);
+    const imgs  = getEntryImages(entry);
     if (!imgs.length) return;
     imgIndex = (imgIndex + 1) % imgs.length;
     renderCarousel(imgs);
@@ -109,6 +116,10 @@ function bindEvents() {
     document.getElementById('btn-toggle-theme').textContent = currentThemeLabel();
   });
   document.getElementById('btn-open-shortcuts').addEventListener('click', openShortcutsModal);
+  document.getElementById('btn-sign-out').addEventListener('click', () => {
+    closeSettingsModal();
+    signOutUser();
+  });
 
   // Shortcuts modal
   document.getElementById('shortcuts-close').addEventListener('click', closeShortcutsModal);
@@ -142,17 +153,18 @@ function bindEvents() {
     if (e.target === document.getElementById('entry-modal')) closeEntryModal();
   });
 
+  // Upload ảnh – pendingImgs giờ là [{id: null, data}]
   document.getElementById('entry-img-input').addEventListener('change', async e => {
     const slots = 7 - pendingImgs.length;
     if (!slots) return;
     for (const f of Array.from(e.target.files).slice(0, slots))
-      pendingImgs.push(await compressImg(f));
+      pendingImgs.push({ id: null, data: await compressImg(f) });
     renderEntryPreviews();
     e.target.value = '';
   });
 
   document.addEventListener('keydown', e => {
-    // Key capture mode — shortcuts modal đang mở
+    // Key capture mode – shortcuts modal đang mở
     if (capturingAction && !document.getElementById('shortcuts-modal').classList.contains('hidden')) {
       e.preventDefault();
       const btn = document.querySelector(`.key-btn[data-action="${capturingAction}"]`);
@@ -168,7 +180,7 @@ function bindEvents() {
       return;
     }
 
-    // Esc — đóng modal / quay lại
+    // Esc – đóng modal / quay lại
     if (e.key === 'Escape') {
       if (!document.getElementById('entry-modal').classList.contains('hidden'))     { closeEntryModal();    return; }
       if (!document.getElementById('notebook-modal').classList.contains('hidden'))  { closeNotebookModal(); return; }
@@ -177,7 +189,7 @@ function bindEvents() {
       if (document.getElementById('view-notebook').classList.contains('active'))    { closePanel(); renderMain(); goTo('view-main'); return; }
     }
 
-    // Phím tắt điều hướng — notebook view, không đang gõ input
+    // Phím tắt điều hướng – notebook view, không đang gõ input
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (!document.getElementById('view-notebook').classList.contains('active')) return;
     if (!document.getElementById('entry-modal').classList.contains('hidden')) return;
@@ -187,6 +199,7 @@ function bindEvents() {
     else if (e.key === shortcuts.imgNext)  document.getElementById('img-next').click();
   });
 
+  // Paste ảnh (Ctrl+V khi entry modal đang mở)
   document.addEventListener('paste', async e => {
     if (document.getElementById('entry-modal').classList.contains('hidden')) return;
     const items = Array.from(e.clipboardData.items).filter(i => i.type.startsWith('image/'));
@@ -195,7 +208,7 @@ function bindEvents() {
     const slots = 7 - pendingImgs.length;
     for (const item of items.slice(0, slots)) {
       const file = item.getAsFile();
-      if (file) pendingImgs.push(await compressImg(file));
+      if (file) pendingImgs.push({ id: null, data: await compressImg(file) });
     }
     renderEntryPreviews();
   });
